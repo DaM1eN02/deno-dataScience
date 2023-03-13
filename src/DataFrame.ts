@@ -7,15 +7,15 @@ export class DataFrame {
     this.header = header;
     this.data = data;
 
-    for (let i = 0; i < header.length || i < data.length; i++) {
+    for (let i = 0; i < this.header.length || i < data.length; i++) {
       const column: string[] = [];
       for (const line of data) {
         column.push(line[i]);
       }
 
       this.dataFrame.push({
-        name: header[i],
-        data: column
+        name: this.header[i],
+        data: column,
       });
     }
   }
@@ -29,6 +29,7 @@ export class DataFrame {
   }
 
   public head(count: number) {
+    console.table(this.data.slice(0, count));
     return this.data.slice(0, count);
   }
 }

@@ -4,8 +4,9 @@ export function readSVG(file: string, seperator = ";", header?: string[]) {
   if (!file.endsWith(".csv"))
     throw new Error("Imported File is not a CSV file");
 
-  const decoder = new TextDecoder("utf-8");
-  const text = decoder.decode(Deno.readFileSync(file));
+  const path = Deno.mainModule.split("/").slice(0, -1).join("/") + "/";
+  console.log(new URL(file, path), path);
+  const text = Deno.readTextFileSync(new URL(file, path));
 
   const lines = text.split("\n").map((line) => {
     line.replaceAll("\r", "");

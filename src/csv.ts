@@ -5,7 +5,6 @@ export function readCSV(file: string, seperator = ";", header?: string[]) {
     throw new Error("Imported File is not a CSV file");
 
   const path = Deno.mainModule.split("/").slice(0, -1).join("/") + "/";
-  console.log(new URL(file, path), path);
   const text = Deno.readTextFileSync(new URL(file, path));
 
   const lines = text.split("\n").map((line) => {

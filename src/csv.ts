@@ -1,6 +1,6 @@
 import { DataFrame } from "./DataFrame.ts";
 
-export function readSVG(file: string, seperator = ";", header?: string[]) {
+export function readCSV(file: string, seperator = ";", header?: string[]) {
   if (!file.endsWith(".csv"))
     throw new Error("Imported File is not a CSV file");
 

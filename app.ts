@@ -1,11 +1,11 @@
-import { readSVG } from "./src/svg.ts";
+import { readCSV } from "./src/csv.ts";
 import { DataFrame } from "./src/DataFrame.ts";
 
 const dataScience = {
-  readSVG,
-  DataFrame
+  readCSV,
+  DataFrame,
 };
 
-export { readSVG, DataFrame };
+export { readCSV, DataFrame };
 
 export default dataScience;

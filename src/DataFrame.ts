@@ -1,5 +1,5 @@
 export class DataFrame {
-  private header: string[];
+  public header: string[];
   private data: string[][];
   private dataFrame: Column[] = [];
 
@@ -21,11 +21,24 @@ export class DataFrame {
   }
 
   public getCol(name: string) {
-    return (
-      this.dataFrame.find((column) => {
-        if (column.name === name) return column;
-      }) ?? []
-    );
+    const col: Column = this.dataFrame.find((column) => {
+      if (column.name === name) return column;
+    }) ?? {
+      name: "COLUMN NOT FOUND",
+      data: [],
+    };
+
+    return col;
+  }
+
+  public setCol(name: string, data: []) {
+    const index = this.dataFrame.findIndex((col) => {
+      if (col.name == name) return true;
+    });
+
+    if (index != -1) {
+      this.dataFrame[index].data = data;
+    }
   }
 
   public head(count: number) {

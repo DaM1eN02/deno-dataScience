@@ -1,3 +1,5 @@
+import { Column } from "./Column.ts";
+
 export class DataFrame {
   public header: string[];
   private data: string[][];
@@ -13,20 +15,15 @@ export class DataFrame {
         column.push(line[i]);
       }
 
-      this.dataFrame.push({
-        name: this.header[i],
-        data: column,
-      });
+      this.dataFrame.push(new Column(this.header[i], column));
     }
   }
 
   public getCol(name: string) {
-    const col: Column = this.dataFrame.find((column) => {
-      if (column.name === name) return column;
-    }) ?? {
-      name: "COLUMN NOT FOUND",
-      data: [],
-    };
+    const col: Column =
+      this.dataFrame.find((column) => {
+        if (column.name === name) return column;
+      }) ?? new Column("COLUMN NOT FOUND", []);
 
     return col;
   }
@@ -38,6 +35,8 @@ export class DataFrame {
 
     if (index != -1) {
       this.dataFrame[index].data = data;
+    } else {
+      console.log("There is no column with the name " + name);
     }
   }
 
@@ -46,8 +45,3 @@ export class DataFrame {
     return this.data.slice(0, count);
   }
 }
-
-type Column = {
-  name: string;
-  data: string[];
-};

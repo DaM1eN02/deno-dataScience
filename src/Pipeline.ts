@@ -1,5 +1,4 @@
 import { Method } from "./Methods.ts";
-import { Column } from "./Column.ts";
 
 export class Pipeline {
   steps: Method[];
@@ -9,7 +8,7 @@ export class Pipeline {
     this.verbose = verbose;
   }
 
-  fit(x: Column, y: Column) {
+  fit(x: number[][], y: number[]) {
     for (const step of this.steps) {
       step.fit(x, y);
     }

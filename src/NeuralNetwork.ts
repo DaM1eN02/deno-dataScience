@@ -8,12 +8,18 @@ export class NeuralNetwork {
 
   constructor(
     layerSizes: number[] = [1, 1],
-    outputLabels: string[],
+    outputLabels?: string[],
     activation: "SIGMOID" | "RELU" | "CAPPED RELU" | "TANH" = "SIGMOID",
     learningRate: number = 0.01
   ) {
     if (layerSizes.length < 2)
       throw new Error("Invalid layer sizes: must have at least two layers");
+    if (!outputLabels) {
+      outputLabels = [];
+      for (let i = 0; i < layerSizes[layerSizes.length - 1]; i++) {
+        outputLabels.push(i.toString());
+      }
+    }
     if (outputLabels.length != layerSizes[layerSizes.length - 1])
       throw new Error("Output Layer and Labels have diffrent lengths");
     if (learningRate <= 0) throw new Error("Learning Rate must be positive");
@@ -25,11 +31,26 @@ export class NeuralNetwork {
     }
 
     for (let i = 0; i < this.layer.length - 1; i++) {
-      const currentLayer = this.layer[i];
-      const nextLayer = this.layer[i + 1];
-      currentLayer.nodes.forEach((node) => {
-        nextLayer.nodes.forEach((nextNode) => {
-          const con = new Connection(node, nextNode);
+      this.layer[i].nodes.forEach((node) => {
+        this.layer[i + 1].nodes.forEach((nextNode) => {
+          let weight = undefined;
+          switch (activation) {
+            case "SIGMOID":
+              weight = Math.random() * 2 - 1;
+              break;
+            case "TANH":
+              weight = Math.random() * 2 - 1;
+              break;
+            case "CAPPED RELU":
+              weight = Math.random() * 0.1;
+              break;
+            case "RELU":
+              weight = Math.random() * 0.1;
+              break;
+            default:
+              break;
+          }
+          const con = new Connection(node, nextNode, weight);
           node.rightConnections.push(con);
           nextNode.leftConnections.push(con);
         });
@@ -68,13 +89,13 @@ export class NeuralNetwork {
     this.backpropagation(y);
   }
 
-  multiTrain(x: number[][], y: number[][]) {
+  fit(x: number[][], y: number[][]) {
     for (let i = 0; i < x.length; i++) {
       this.train(x[i], y[i]);
     }
   }
 
-  test(input: number[]) {
+  predict(input: number[]) {
     this.feedForward(input);
 
     let highestID = 0;
@@ -86,7 +107,6 @@ export class NeuralNetwork {
       }
     });
 
-    console.log(this.outputLabels[highestID]);
     return this.outputLabels[highestID];
   }
 
@@ -205,7 +225,11 @@ export class NeuralNetwork {
       Deno.mainModule.split("/").slice(3, -1).join("/") + "/" + name + ".json";
     const json: JSONNN = JSON.parse(decoder.decode(Deno.readFileSync(path)));
 
-    const nn = new NeuralNetwork([1, 1], json.outputLabels, json.method);
+    const nn = new NeuralNetwork(
+      json.layer.map((layer) => layer.size),
+      json.outputLabels,
+      json.method
+    );
     nn.learningRate = json.learningRate;
     nn.layer = [];
     json.layer.forEach((layer) => {
@@ -229,7 +253,12 @@ export class NeuralNetwork {
         });
       });
 
-      const connection = new Connection(leftNode, rightNode, con.id);
+      const connection = new Connection(
+        leftNode,
+        rightNode,
+        con.weight,
+        con.id
+      );
 
       leftNode?.rightConnections.push(connection);
       rightNode?.leftConnections.push(connection);
@@ -323,9 +352,9 @@ class Connection {
   leftNode: Node;
   rightNode: Node;
 
-  constructor(leftNode: Node, rightNode: Node, id?: number) {
+  constructor(leftNode: Node, rightNode: Node, weight?: number, id?: number) {
     this.id = id ?? ++Connection.idCounter;
-    this.weight = Math.random() * 10 - 5;
+    this.weight = weight ?? Math.random() * 2 - 1;
     this.leftNode = leftNode;
     this.rightNode = rightNode;
   }

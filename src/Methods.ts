@@ -1,13 +1,11 @@
-import { Column } from "./Column.ts";
-
 export interface MethodInterface {
-  fit(x: Column, y: Column): void;
+  fit(x: number[][], y: number[]): void;
   dump(name: string): void;
   load(name: string): void;
 }
 
-export class Method implements MethodInterface {
-  fit(x: Column, y: Column): void {}
+export abstract class Method implements MethodInterface {
+  fit(x: number[][], y: number[]): void {}
   dump(name: string): void {
     const encoder = new TextEncoder();
     const path =
@@ -24,11 +22,9 @@ export class Method implements MethodInterface {
 }
 
 export class CountVectorizer extends Method {
-  fit(_x: Column, _y: Column): void {}
+  fit(x: number[][], y: number[]): void {}
 }
 
 export class TfidfTransformer extends Method {
-  fit(_x: Column, _y: Column): void {}
+  fit(x: number[][], y: number[]): void {}
 }
-
-export class RandomForestClassifier extends Method {}

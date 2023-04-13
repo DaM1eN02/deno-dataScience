@@ -1,3 +1,6 @@
+/**
+ * Neural Network class
+ */
 export class NeuralNetwork {
   private layer: Layer[];
   private outputLabels: string[];
@@ -6,6 +9,13 @@ export class NeuralNetwork {
   private dmethod: CallableFunction;
   private learningRate: number;
 
+  /**
+   * Constructs a new NeuralNetwork object.
+   * @param layerSizes An array containing the sizes of each layer of the neural network.
+   * @param outputLabels An optional array of labels for the output nodes.
+   * @param activation The activation function to use. One of "SIGMOID", "RELU", "CAPPED RELU", or "TANH". Defaults to "SIGMOID".
+   * @param learningRate The learning rate for training the neural network. Defaults to 0.01.
+   */
   constructor(
     layerSizes: number[] = [1, 1],
     outputLabels?: string[],
@@ -84,17 +94,32 @@ export class NeuralNetwork {
     this.methodName = activation;
   }
 
+  /**
+   * Trains the neural network with the provided input and output data.
+   * @param x An array of input data.
+   * @param y An array of expected output data.
+   */
   train(x: number[], y: number[]) {
     this.feedForward(x);
     this.backpropagation(y);
   }
 
+  /**
+   * Trains the neural network with multiple input-output data pairs.
+   * @param x An array of input data.
+   * @param y An array of expected output data.
+   */
   fit(x: number[][], y: number[][]) {
     for (let i = 0; i < x.length; i++) {
       this.train(x[i], y[i]);
     }
   }
 
+  /**
+   * Predicts the output for the given input data using the trained neural network.
+   * @param input An array of input data.
+   * @returns The predicted output.
+   */
   predict(input: number[]) {
     this.feedForward(input);
 
@@ -157,6 +182,10 @@ export class NeuralNetwork {
     }
   }
 
+  /**
+   * Dumps the trained neural network to a JSON file.
+   * @param name The name of the file to dump the neural network to.
+   */
   dump(name: string): void {
     const layers: JSONLayer[] = [];
     this.layer.forEach((layer) => {

@@ -49,6 +49,22 @@ export class DataFrame {
     return new DataFrame(header, lines);
   }
 
+  public writeCSV(file: string, seperator = ";") {
+    let csv = "";
+
+    this.data.forEach((row) => {
+      row.forEach((col) => {
+        csv += col += seperator;
+      });
+      csv += `\n`;
+    });
+
+    const path =
+      Deno.mainModule.split("/").slice(3, -1).join("/") + "/" + file + ".csv";
+    const encoder = new TextEncoder();
+    Deno.writeFileSync(path, encoder.encode(csv));
+  }
+
   /**
    * Returns the Column as an Column object
    * @param name: string | Name of the Column
@@ -68,7 +84,7 @@ export class DataFrame {
    * @param name: string | Name of the Column
    * @param data: any[] | Data to replace in the DataFrame
    */
-  public setCol(name: string, data: []): void {
+  public setCol(name: string, data: string[]): void {
     const index = this.dataFrame.findIndex((col) => {
       if (col.name == name) return true;
     });
@@ -78,6 +94,35 @@ export class DataFrame {
     } else {
       console.log("There is no column with the name " + name);
     }
+  }
+
+  /**
+   * Returns a row from the DataFrame
+   * @param number Row number
+   * @returns string[] of the row
+   */
+  public getRow(number: number): string[] {
+    return this.data[number];
+  }
+
+  public setRow(number: number, data: string[]) {
+    this.data[number] = data;
+
+    data.forEach((item, id) => {
+      const newCol = this.getCol(this.header[id]).data;
+      newCol[0] = item;
+      this.setCol(this.header[id], newCol);
+    });
+  }
+
+  public insert(data: string[]) {
+    this.data.push(data);
+
+    data.forEach((item, id) => {
+      const newCol = this.getCol(this.header[id]).data;
+      newCol.push(item);
+      this.setCol(this.header[id], newCol);
+    });
   }
 
   /**

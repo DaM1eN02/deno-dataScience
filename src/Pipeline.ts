@@ -1,9 +1,7 @@
-import { Method } from "./Methods.ts";
-
 export class Pipeline {
-  steps: Method[];
+  steps: any[];
   verbose: boolean;
-  constructor(steps: Method[], verbose = false) {
+  constructor(steps: any[], verbose = false) {
     this.steps = steps;
     this.verbose = verbose;
   }

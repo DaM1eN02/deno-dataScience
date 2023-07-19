@@ -32,4 +32,13 @@ export class ActivationFunctions {
   static dtanh(x: number): number {
     return 1 - Math.tanh(x) * Math.tanh(x);
   }
+
+  static softmax(logits: number[]): number[] {
+    const maxLogit = Math.max(...logits); // Get the maximum logit value
+    const expLogits = logits.map((logit) => Math.exp(logit - maxLogit)); // Subtract the maximum logit value to avoid overflow
+    const sumExpLogits = expLogits.reduce((sum, expLogit) => sum + expLogit, 0); // Calculate the sum of the exponentiated logits
+    const softmaxValues = expLogits.map((expLogit) => expLogit / sumExpLogits); // Calculate the softmax values
+
+    return softmaxValues;
+  }
 }

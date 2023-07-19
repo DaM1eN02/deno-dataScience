@@ -37,7 +37,7 @@ export class DataFrame {
     const text = Deno.readTextFileSync(new URL(file, path));
 
     const lines = text.split("\n").map((line) => {
-      line.replaceAll("\r", "");
+      line = line.replaceAll("\r", "");
       return line.split(seperator);
     });
 

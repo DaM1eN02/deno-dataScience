@@ -1,5 +1,6 @@
 .vscode
 /test
+/testnn
 /src/ArriensNetwork.ts
 /src/RandomForestClassifier.ts
 /src/Pipeline.ts

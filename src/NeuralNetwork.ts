@@ -112,9 +112,29 @@ export class NeuralNetwork {
    * @param y An array of expected output data.
    */
   fit(x: number[][], y: number[][]) {
+    [x, y] = this.randomShuffle(x, y);
     for (let i = 0; i < x.length; i++) {
       this.train(x[i], y[i]);
     }
+  }
+
+  private randomShuffle(X: number[][], Y: number[][]) {
+    if (X.length !== Y.length) {
+      throw new Error("Input arrays must have the same length.");
+    }
+
+    const shuffledX = [...X];
+    const shuffledY = [...Y];
+
+    for (let i = shuffledX.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+
+      // Swap elements at index i and j
+      [shuffledX[i], shuffledX[j]] = [shuffledX[j], shuffledX[i]];
+      [shuffledY[i], shuffledY[j]] = [shuffledY[j], shuffledY[i]];
+    }
+
+    return [shuffledX, shuffledY];
   }
 
   /**
@@ -147,11 +167,22 @@ export class NeuralNetwork {
     this.setInputValues(input);
     for (let i = 1; i < this.layer.length; i++) {
       this.layer[i].nodes.forEach((node) => {
+        node.value = 0;
         node.leftConnections.forEach((connection) => {
           node.value += connection.leftNode.value * connection.weight;
         });
         node.value = this.method(node.value + node.bias);
       });
+    }
+
+    const outputValues = this.layer[this.layer.length - 1].nodes.map(
+      (node) => node.value
+    );
+
+    const softOutput = ActivationFunctions.softmax(outputValues);
+
+    for (let i = 0; i < this.layer[this.layer.length - 1].size; i++) {
+      this.layer[this.layer.length - 1].nodes[i].value = softOutput[i];
     }
   }
 
@@ -163,7 +194,7 @@ export class NeuralNetwork {
       node.outputError = error;
     });
 
-    for (let i = this.layer.length - 2; i > 0; i--) {
+    for (let i = this.layer.length - 2; i >= 0; i--) {
       this.layer[i].nodes.forEach((node) => {
         let totalError = 0;
         node.rightConnections.forEach((con) => {

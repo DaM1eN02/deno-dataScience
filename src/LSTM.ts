@@ -36,7 +36,7 @@ export class LSTM {
     this.bstm3 = Math.random() * 5;
   }
 
-  train(x: number, y: number) {}
+  train(_x: number, _y: number) {}
 
   predict(x: number) {
     return (
@@ -59,7 +59,7 @@ export class LSTM {
   }
 
   calc(x: number) {
-    const NLTM =
+    this.LTM =
       this.LTM *
         ActivationFunctions.sigmoid(
           x * this.wi0 + this.STM * this.wstm0 + this.bstm0
@@ -70,13 +70,11 @@ export class LSTM {
         ActivationFunctions.tanh(
           x * this.wi2 + this.STM * this.wstm2 + this.bstm2
         );
-    return {
-      LTM: NLTM,
-      STM:
-        ActivationFunctions.tanh(NLTM) *
-        ActivationFunctions.sigmoid(
-          x * this.wi3 + this.STM * this.wstm3 + this.bstm3
-        ),
-    };
+
+    this.STM =
+      ActivationFunctions.tanh(this.LTM) *
+      ActivationFunctions.sigmoid(
+        x * this.wi3 + this.STM * this.wstm3 + this.bstm3
+      );
   }
 }

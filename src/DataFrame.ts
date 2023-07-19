@@ -30,11 +30,8 @@ export class DataFrame {
    * @returns DataFrame
    */
   public readCSV(file: string, seperator = ";", header?: string[]): DataFrame {
-    if (!file.endsWith(".csv"))
-      throw new Error("Imported File is not a CSV file");
-
-    const path = Deno.mainModule.split("/").slice(0, -1).join("/") + "/";
-    const text = Deno.readTextFileSync(new URL(file, path));
+    const path = `${Deno.mainModule.split("/").slice(0, -1).join("/")}/`;
+    const text = Deno.readTextFileSync(new URL(`${file}.csv`, path));
 
     const lines = text.split("\n").map((line) => {
       line = line.replaceAll("\r", "");
@@ -49,6 +46,11 @@ export class DataFrame {
     return new DataFrame(header, lines);
   }
 
+  /**
+   *
+   * @param file
+   * @param seperator
+   */
   public writeCSV(file: string, seperator = ";") {
     let csv = "";
 
@@ -59,8 +61,10 @@ export class DataFrame {
       csv += `\n`;
     });
 
-    const path =
-      Deno.mainModule.split("/").slice(3, -1).join("/") + "/" + file + ".csv";
+    const path = `${Deno.mainModule
+      .split("/")
+      .slice(3, -1)
+      .join("/")}/${file}.csv`;
     const encoder = new TextEncoder();
     Deno.writeFileSync(path, encoder.encode(csv));
   }
@@ -133,4 +137,20 @@ export class DataFrame {
   public head(count: number): string[][] {
     return this.data.slice(0, count);
   }
+}
+
+/**
+ *
+ * @param file
+ * @param seperator
+ * @returns string[][]
+ */
+export function readCSVLight(file: string, seperator = ";"): string[][] {
+  const path = Deno.mainModule.split("/").slice(0, -1).join("/") + "/";
+  const text = Deno.readTextFileSync(new URL(`${file}.csv`, path));
+
+  return text.split("\n").map((line) => {
+    line = line.replaceAll("\r", "");
+    return line.split(seperator);
+  });
 }

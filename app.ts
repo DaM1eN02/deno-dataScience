@@ -1,10 +1,9 @@
 import { ArriensNetwork } from "./src/ArriensNetwork.ts";
-import { DataFrame, readCSVLight } from "./src/DataFrame.ts";
+import { DataFrame, readCSVLight, writeCSV } from "./src/DataFrame.ts";
 import { NeuralNetwork } from "./src/NeuralNetwork.ts";
-import { RNN } from "./src/RNN.ts";
 import { LSTM } from "./src/LSTM.ts";
 import { ActivationFunctions } from "./src/ActivationFunctions.ts";
-import { EncoderDecoder } from "./src/EncoderDecoder.ts";
+import { EncoderDecoder, Encoder } from "./src/EncoderDecoder.ts";
 
 const readCSV = DataFrame.prototype.readCSV;
 
@@ -13,10 +12,11 @@ const dataScience = {
   readCSVLight,
   DataFrame,
   NeuralNetwork,
-  RNN,
   LSTM,
   ActivationFunctions,
   EncoderDecoder,
+  Encoder,
+  writeCSV,
 };
 
 export {
@@ -25,10 +25,11 @@ export {
   DataFrame,
   NeuralNetwork,
   ArriensNetwork,
-  RNN,
   LSTM,
   ActivationFunctions,
   EncoderDecoder,
+  Encoder,
+  writeCSV,
 };
 
 export default dataScience;

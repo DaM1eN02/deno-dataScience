@@ -1,13 +1,13 @@
-import { NeuralNetwork } from "../app.ts";
+import { NeuralNetwork } from "./NeuralNetwork.ts";
 import { LSTM } from "./LSTM.ts";
 
 export class EncoderDecoder {
   private encoder: Encoder;
   private decoder: Decoder;
 
-  constructor(layers = 1, outputLabels: string[]) {
-    this.encoder = new Encoder(layers);
-    this.decoder = new Decoder(layers, outputLabels);
+  constructor(layers = 1, lstmDepth = 1, outputLabels: string[]) {
+    this.encoder = new Encoder(layers, lstmDepth);
+    this.decoder = new Decoder(layers, lstmDepth, outputLabels);
   }
 
   get(text: string, vocabLanguage: string) {
@@ -19,6 +19,10 @@ export class EncoderDecoder {
 
     const input = Array.from({ length: 1 }, () => this.oneHotEncoding(0));
     return this.decoder.forward(input, memory);
+  }
+
+  backpropagate(expectedOutput: number[]) {
+    this.decoder.backpropagate(expectedOutput);
   }
 
   // Tokenize the text
@@ -125,14 +129,14 @@ export class Encoder {
   private LSTMLayers: LSTM[][];
   // public memory: { LTM: number[]; STM: number[] }[];
 
-  constructor(layers = 1) {
-    this.EmbeddingLayer = new NeuralNetwork([32, 32]);
+  constructor(layers = 1, lstmDepth: number) {
+    this.EmbeddingLayer = new NeuralNetwork([32, lstmDepth]);
     this.LSTMLayers = [];
 
     for (let i = 0; i < layers; i++) {
       const layer: LSTM[] = [];
       this.LSTMLayers.push(layer);
-      for (let j = 0; j < 32; j++) {
+      for (let j = 0; j < lstmDepth; j++) {
         this.LSTMLayers[i].push(new LSTM());
       }
     }
@@ -142,9 +146,9 @@ export class Encoder {
     for (let i = 0; i < x.length; i++) {
       this.EmbeddingLayer.predict(x[i]);
 
-      const outputs = this.EmbeddingLayer.layer[
-        this.EmbeddingLayer.layer.length - 1
-      ].nodes.map((node) => node.value);
+      const outputs = this.EmbeddingLayer.network[
+        this.EmbeddingLayer.network.length - 1
+      ].map((node) => node[0]);
 
       this.LSTMLayers.forEach((layer) => {
         layer.forEach((lstm, index) => {
@@ -167,18 +171,20 @@ export class Decoder {
   private LSTMLayers: LSTM[][];
   private FullyConnectedLayer: NeuralNetwork;
 
-  constructor(layers = 1, outputLabels: string[]) {
-    this.EmbeddingLayer = new NeuralNetwork([32, 32]);
+  constructor(layers = 1, lstmDepth: number, outputLabels: string[]) {
+    this.EmbeddingLayer = new NeuralNetwork([32, lstmDepth]);
     this.LSTMLayers = [];
     this.FullyConnectedLayer = new NeuralNetwork(
-      [32, outputLabels.length],
+      [lstmDepth, outputLabels.length],
+      "RELU",
+      0.01,
       outputLabels
     );
 
     for (let i = 0; i < layers; i++) {
       const layer: LSTM[] = [];
       this.LSTMLayers.push(layer);
-      for (let j = 0; j < 32; j++) {
+      for (let j = 0; j < lstmDepth; j++) {
         this.LSTMLayers[i].push(new LSTM());
       }
     }
@@ -195,9 +201,9 @@ export class Decoder {
     for (let i = 0; i < x.length; i++) {
       this.EmbeddingLayer.predict(x[i]);
 
-      const outputs = this.EmbeddingLayer.layer[
-        this.EmbeddingLayer.layer.length - 1
-      ].nodes.map((node) => node.value);
+      const outputs = this.EmbeddingLayer.network[
+        this.EmbeddingLayer.network.length - 1
+      ].map((node) => node[0]);
 
       this.LSTMLayers.forEach((layer) => {
         layer.forEach((lstm, index) => {
@@ -212,10 +218,14 @@ export class Decoder {
     });
 
     console.log(
-      this.FullyConnectedLayer.layer[
-        this.FullyConnectedLayer.layer.length - 1
-      ].nodes.map((node) => node.value)
+      this.FullyConnectedLayer.network[
+        this.FullyConnectedLayer.network.length - 1
+      ].map((node) => node[0])
     );
     return this.FullyConnectedLayer.predict(inputs);
+  }
+
+  backpropagate(expectedOutput: number[]) {
+    this.FullyConnectedLayer.backpropagate(expectedOutput);
   }
 }

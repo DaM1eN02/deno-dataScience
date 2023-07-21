@@ -38,12 +38,7 @@ export class DataFrame {
       return line.split(seperator);
     });
 
-    if (!header) {
-      header = lines[0];
-      lines.shift();
-    }
-
-    return new DataFrame(header, lines);
+    return new DataFrame(header ? header : lines[0], lines);
   }
 
   /**
@@ -93,11 +88,9 @@ export class DataFrame {
       if (col.name == name) return true;
     });
 
-    if (index != -1) {
-      this.dataFrame[index].data = data;
-    } else {
-      console.log("There is no column with the name " + name);
-    }
+    index != -1
+      ? (this.dataFrame[index].data = data)
+      : console.log("There is no column with the name " + name);
   }
 
   /**
@@ -153,4 +146,22 @@ export function readCSVLight(file: string, seperator = ";"): string[][] {
     line = line.replaceAll("\r", "");
     return line.split(seperator);
   });
+}
+
+export function writeCSV(data: string[][], fileName: string, seperator = ";") {
+  let csv = "";
+
+  data.forEach((row) => {
+    row.forEach((col) => {
+      csv += col += seperator;
+    });
+    csv += `\n`;
+  });
+
+  const path = `${Deno.mainModule
+    .split("/")
+    .slice(3, -1)
+    .join("/")}/${fileName}.csv`;
+  const encoder = new TextEncoder();
+  Deno.writeFileSync(path, encoder.encode(csv));
 }

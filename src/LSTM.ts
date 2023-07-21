@@ -18,7 +18,7 @@ export class LSTM {
   private bstm2: number;
   private bstm3: number;
 
-  constructor() {
+  constructor(public learningRate = 0.01) {
     this.STM = 0;
     this.LTM = 0;
 
@@ -35,8 +35,6 @@ export class LSTM {
     this.bstm2 = Math.random() * 5;
     this.bstm3 = Math.random() * 5;
   }
-
-  train(_x: number, _y: number) {}
 
   predict(x: number) {
     return (
@@ -76,5 +74,15 @@ export class LSTM {
       ActivationFunctions.sigmoid(
         x * this.wi3 + this.STM * this.wstm3 + this.bstm3
       );
+  }
+
+  backpropagate(_target: number) {
+    const gradientWI3 =
+      ActivationFunctions.dtanh(this.LTM) /
+      ActivationFunctions.dsigmoid(this.STM * this.wstm3 + this.bstm3);
+    const _gradientWSTM3 =
+      ActivationFunctions.dtanh(this.LTM) /
+      ActivationFunctions.dsigmoid(this.STM * this.wi3 + this.bstm3);
+    this.wi3 += this.learningRate * gradientWI3;
   }
 }

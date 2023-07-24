@@ -4,6 +4,7 @@ import { NeuralNetwork } from "./src/NeuralNetwork.ts";
 import { LSTM } from "./src/LSTM.ts";
 import { ActivationFunctions } from "./src/ActivationFunctions.ts";
 import { EncoderDecoder, Encoder } from "./src/EncoderDecoder.ts";
+import { VocabCreator } from "./src/Vocab.ts";
 
 const readCSV = DataFrame.prototype.readCSV;
 
@@ -17,6 +18,7 @@ const dataScience = {
   EncoderDecoder,
   Encoder,
   writeCSV,
+  VocabCreator,
 };
 
 export {
@@ -30,6 +32,7 @@ export {
   EncoderDecoder,
   Encoder,
   writeCSV,
+  VocabCreator,
 };
 
 export default dataScience;

@@ -1,13 +1,15 @@
-enum Languages {
-  "de",
-  "en",
-  "nl",
-}
+type Languages = "de" | "en" | "nl" | "fr" | "es";
 
 export const VocabCreator = {
   addVocab(text: string, language: Languages) {
     const tokens = tokenize(text);
-    createVocab(tokens, language.toString());
+    const [vocab, thresholdVocab] = readVocab(language);
+    const [newVocab, newThresholdVocab] = createVocab(
+      tokens,
+      vocab,
+      thresholdVocab
+    );
+    writeVocab(newVocab, newThresholdVocab, language);
   },
 };
 
@@ -28,58 +30,114 @@ function tokenize(text: string): string[] {
 }
 
 // Create vocabulary and convert tokens to indices
-function createVocab(tokens: string[], vocabLanguage: string) {
-  const vocab = readVocab(vocabLanguage);
-  const existingWords = new Set(vocab.map((entry) => entry[1]));
+function createVocab(
+  tokens: string[],
+  vocab: [string, string, number][],
+  thresholdVocab: [string, string, number][]
+) {
+  const existingWords = new Set(
+    vocab
+      .map((entry) => entry[1])
+      .concat(thresholdVocab.map((entry) => entry[1]))
+  );
 
   tokens.forEach((token) => {
-    if (!existingWords.has(token)) {
-      const newIndex = vocab.length.toString();
-      vocab.push([newIndex, token]);
+    if (!thresholdVocab.map((entry) => entry[1]).includes(token)) {
+      thresholdVocab.push(["1", token, 1]);
       existingWords.add(token);
+    } else {
+      vocab.find((entry) => entry[1] == token)
+        ? vocab[vocab.findIndex((entry) => entry[1] == token)][2]++
+        : thresholdVocab[
+            thresholdVocab.findIndex((entry) => entry[1] == token)
+          ][2]++;
     }
   });
 
+  thresholdVocab.forEach((entry) => {
+    if (entry[2] >= 1000) {
+      vocab.push(entry);
+    }
+  });
+  thresholdVocab = thresholdVocab.filter((entry) => entry[2] < 1000);
+
   vocab.sort((a, b) => {
-    if (a[1] > b[1]) return 1;
-    if (a[1] < b[1]) return -1;
+    if (a[2] > b[2]) return -1;
+    if (a[2] < b[2]) return 1;
+    else return 0;
+  });
+
+  thresholdVocab.sort((a, b) => {
+    if (a[2] > b[2]) return -1;
+    if (a[2] < b[2]) return 1;
     else return 0;
   });
 
   vocab.forEach((value, id) => {
     value[0] = id.toString();
   });
+  thresholdVocab.forEach((value, id) => {
+    value[0] = id.toString();
+  });
 
-  writeVocab(vocab, vocabLanguage);
-
-  return tokens.map((token) => vocab.find(([_, word]) => word === token)![0]);
+  return [vocab, thresholdVocab];
 }
 
 // Read the vocabulary from the CSV file
-function readVocab(vocabLanguage: string): [string, string][] {
+function readVocab(vocabLanguage: Languages) {
   try {
-    const vocabContent = Deno.readFileSync(
+    const vocabText = Deno.readTextFileSync(
       `./src/vocabulary/${vocabLanguage}.csv`
     );
-    const decoder = new TextDecoder();
-    const vocabText = decoder.decode(vocabContent);
     const lines = vocabText
       .split("\n")
       .filter((line) => line.trim().length > 0);
 
-    return lines.map((line) => {
-      const [id, word] = line.split("\t\t\t");
-      return [id, word];
+    const thresholdVocabText = Deno.readTextFileSync(
+      `./src/vocabulary/threshold/${vocabLanguage}.csv`
+    );
+    const thresholdLines = thresholdVocabText
+      .split("\n")
+      .filter((line) => line.trim().length > 0);
+
+    const vocab: [string, string, number][] = lines.map((line) => {
+      const [id, word, count] = line.split(";");
+      return [id, word, parseInt(count)];
     });
-  } catch (_error) {
-    return [["0", "."]]; // Return a default entry if the file doesn't exist or there was an error
+    const thresholdVocab: [string, string, number][] = thresholdLines.map(
+      (line) => {
+        const [id, word, count] = line.split(";");
+        return [id, word, parseInt(count)];
+      }
+    );
+
+    return [vocab, thresholdVocab];
+  } catch (_err) {
+    const vocab1: [string, string, number][] = [["0", ".", 0]];
+    const vocab2: [string, string, number][] = [["0", ".", 0]];
+    return [vocab1, vocab2];
   }
 }
 
 // Write the vocabulary to the CSV file
-function writeVocab(vocab: [string, string][], vocabLanguage: string) {
-  const vocabText = vocab.map(([id, word]) => `${id}\t\t\t${word}`).join("\n");
+function writeVocab(
+  vocab: [string, string, number][],
+  thresholdVocab: [string, string, number][],
+  vocabLanguage: Languages
+) {
+  const vocabText = vocab
+    .map(([id, word, count]) => `${id};${word};${count}`)
+    .join("\n");
   const encoder = new TextEncoder();
   const vocabData = encoder.encode(vocabText);
   Deno.writeFileSync(`./src/vocabulary/${vocabLanguage}.csv`, vocabData);
+
+  const thresholdVocabText = thresholdVocab
+    .map(([id, word, count]) => `${id};${word};${count}`)
+    .join("\n");
+  const thresholdVocabData = encoder.encode(thresholdVocabText);
+  Deno.writeFileSync(
+    `./src/vocabulary/threshold/${vocabLanguage}.csv`,
+    thresholdVocabData
+  );
 }

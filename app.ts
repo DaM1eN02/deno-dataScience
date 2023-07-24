@@ -1,4 +1,3 @@
-import { ArriensNetwork } from "./src/ArriensNetwork.ts";
 import { DataFrame, readCSVLight, writeCSV } from "./src/DataFrame.ts";
 import { NeuralNetwork } from "./src/NeuralNetwork.ts";
 import { LSTM } from "./src/LSTM.ts";
@@ -26,7 +25,6 @@ export {
   readCSVLight,
   DataFrame,
   NeuralNetwork,
-  ArriensNetwork,
   LSTM,
   ActivationFunctions,
   EncoderDecoder,
